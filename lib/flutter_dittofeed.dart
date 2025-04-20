@@ -1,0 +1,557 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
+import 'batch_queue.dart';
+
+enum EventType {
+  identify,
+  track,
+  page,
+  screen;
+
+  String get value {
+    return toString();
+  }
+}
+
+typedef AppDataContext = Map<String, dynamic>;
+
+abstract class BatchItem {
+  Map<String, dynamic> toJson();
+}
+
+class BaseAppData extends BatchItem {
+  String? messageId;
+  String? timestamp;
+
+  BaseAppData({this.messageId, this.timestamp});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      if (messageId != null) 'messageId': messageId,
+      if (timestamp != null) 'timestamp': timestamp,
+    };
+  }
+}
+
+class BaseIdentifyData extends BaseAppData {
+  AppDataContext? context;
+  Map<String, dynamic>? traits;
+
+  BaseIdentifyData({
+    super.messageId,
+    super.timestamp,
+    this.context,
+    this.traits,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (context != null) 'context': context,
+      if (traits != null) 'traits': traits,
+    };
+  }
+}
+
+class IdentifyData extends BaseIdentifyData {
+  String userId;
+
+  IdentifyData({
+    required this.userId,
+    super.messageId,
+    super.timestamp,
+    super.context,
+    super.traits,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'userId': userId,
+    };
+  }
+}
+
+class BaseBatchIdentifyData extends BaseAppData {
+  EventType type = EventType.identify;
+  Map<String, dynamic>? traits;
+
+  BaseBatchIdentifyData({
+    super.messageId,
+    super.timestamp,
+    this.traits,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'type': type.value,
+      if (traits != null) 'traits': traits,
+    };
+  }
+}
+
+class BatchIdentifyData extends BaseBatchIdentifyData {
+  String? userId;
+  String? anonymousId;
+
+  BatchIdentifyData({
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.traits,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BaseTrackData extends BaseAppData {
+  AppDataContext? context;
+  String event;
+  Map<String, dynamic>? properties;
+
+  BaseTrackData({
+    required this.event,
+    super.messageId,
+    super.timestamp,
+    this.context,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'event': event,
+      if (context != null) 'context': context,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class TrackData extends BaseTrackData {
+  String? userId;
+  String? anonymousId;
+
+  TrackData({
+    required super.event,
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.context,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BaseBatchTrackData extends BaseAppData {
+  EventType type = EventType.track;
+  String event;
+  Map<String, dynamic>? properties;
+
+  BaseBatchTrackData({
+    required this.event,
+    super.messageId,
+    super.timestamp,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'type': type.value,
+      'event': event,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class BatchTrackData extends BaseBatchTrackData {
+  String? userId;
+  String? anonymousId;
+
+  BatchTrackData({
+    required super.event,
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BasePageData extends BaseAppData {
+  AppDataContext? context;
+  String? name;
+  Map<String, dynamic>? properties;
+
+  BasePageData({
+    super.messageId,
+    super.timestamp,
+    this.context,
+    this.name,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (context != null) 'context': context,
+      if (name != null) 'name': name,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class PageData extends BasePageData {
+  String? userId;
+  String? anonymousId;
+
+  PageData({
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.context,
+    super.name,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BaseBatchPageData extends BaseAppData {
+  EventType type = EventType.page;
+  String? name;
+  Map<String, dynamic>? properties;
+
+  BaseBatchPageData({
+    super.messageId,
+    super.timestamp,
+    this.name,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'type': type.value,
+      if (name != null) 'name': name,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class BatchPageData extends BaseBatchPageData {
+  String? userId;
+  String? anonymousId;
+
+  BatchPageData({
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.name,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BaseScreenData extends BaseAppData {
+  AppDataContext? context;
+  String? name;
+  Map<String, dynamic>? properties;
+
+  BaseScreenData({
+    super.messageId,
+    super.timestamp,
+    this.context,
+    this.name,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (context != null) 'context': context,
+      if (name != null) 'name': name,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class ScreenData extends BaseScreenData {
+  String? userId;
+  String? anonymousId;
+
+  ScreenData({
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.context,
+    super.name,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BaseBatchScreenData extends BaseAppData {
+  EventType type = EventType.screen;
+  String? name;
+  Map<String, dynamic>? properties;
+
+  BaseBatchScreenData({
+    super.messageId,
+    super.timestamp,
+    this.name,
+    this.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'type': type.value,
+      if (name != null) 'name': name,
+      if (properties != null) 'properties': properties,
+    };
+  }
+}
+
+class BatchScreenData extends BaseBatchScreenData {
+  String? userId;
+  String? anonymousId;
+
+  BatchScreenData({
+    this.userId,
+    this.anonymousId,
+    super.messageId,
+    super.timestamp,
+    super.name,
+    super.properties,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      if (userId != null) 'userId': userId,
+      if (anonymousId != null) 'anonymousId': anonymousId,
+    };
+  }
+}
+
+class BatchAppData {
+  List<BatchItem> batch;
+  AppDataContext? context;
+
+  BatchAppData({
+    required this.batch,
+    this.context,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'batch': batch.map((item) => item.toJson()).toList(),
+      if (context != null) 'context': context,
+    };
+  }
+}
+
+class InitParams {
+  final String writeKey;
+  final String host;
+
+  InitParams({
+    required this.writeKey,
+    this.host = 'https://dittofeed.com',
+  });
+}
+
+class DittofeedSDK {
+  final String writeKey;
+  final String host;
+  final http.Client _httpClient;
+
+  static DittofeedSDK? _instance;
+  final BatchQueue<BatchItem> _batchQueue;
+  final Uuid _uuid = Uuid();
+
+  String _uuidv4() => _uuid.v4();
+
+  DittofeedSDK._({
+    required this.writeKey,
+    required this.host,
+    http.Client? httpClient
+  }) : _httpClient = httpClient ?? http.Client(),
+        _batchQueue = BatchQueue<BatchItem>(
+          batchSize: 5,
+          timeout: 500,
+          executeBatch: (batch) async {
+            final data = BatchAppData(batch: batch);
+
+            try {
+              final client = httpClient ?? http.Client();
+              final response = await client.post(
+                Uri.parse('$host/api/public/apps/batch'),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': writeKey,
+                },
+                body: jsonEncode(data.toJson()),
+              );
+
+              if (response.statusCode >= 400) {
+                print('Dittofeed Error: ${response.statusCode} ${response.body}');
+              }
+            } catch (error) {
+              print('Dittofeed Error: unknown ${error.toString()}');
+            }
+          },
+        );
+
+  static Future<DittofeedSDK> init(
+      InitParams params, {
+        http.Client? httpClient,
+      }) async {
+    _instance ??= DittofeedSDK._(
+      writeKey: params.writeKey,
+      host: params.host,
+      httpClient: httpClient,
+    );
+    return _instance!;
+  }
+
+  static void reset() {
+    _instance = null;
+  }
+
+  static void identify(IdentifyData params) {
+    if (_instance == null) {
+      throw Exception('DittofeedSDK must be initialized before calling identify');
+    }
+    
+    final data = BatchIdentifyData(
+      messageId: params.messageId ?? _instance!._uuidv4(),
+      userId: params.userId,
+      traits: params.traits,
+    );
+    
+    _instance!._batchQueue.submit(data);
+  }
+
+  static void track(TrackData params) {
+    if (_instance == null) {
+      throw Exception('DittofeedSDK must be initialized before calling track');
+    }
+    
+    final data = BatchTrackData(
+      messageId: params.messageId ?? _instance!._uuidv4(),
+      event: params.event,
+      userId: params.userId,
+      anonymousId: params.anonymousId,
+      properties: params.properties,
+    );
+    
+    _instance!._batchQueue.submit(data);
+  }
+
+  static void page(PageData params) {
+    if (_instance == null) {
+      throw Exception('DittofeedSDK must be initialized before calling page');
+    }
+    
+    final data = BatchPageData(
+      messageId: params.messageId ?? _instance!._uuidv4(),
+      userId: params.userId,
+      anonymousId: params.anonymousId,
+      name: params.name,
+      properties: params.properties,
+    );
+    
+    _instance!._batchQueue.submit(data);
+  }
+
+  static void screen(ScreenData params) {
+    if (_instance == null) {
+      throw Exception('DittofeedSDK must be initialized before calling screen');
+    }
+    
+    final data = BatchScreenData(
+      messageId: params.messageId ?? _instance!._uuidv4(),
+      userId: params.userId,
+      anonymousId: params.anonymousId,
+      name: params.name,
+      properties: params.properties,
+    );
+    
+    _instance!._batchQueue.submit(data);
+  }
+
+  static Future<void> flush() async {
+    if (_instance == null) {
+      throw Exception('DittofeedSDK must be initialized before calling flush');
+    }
+    
+    await _instance!._batchQueue.flush();
+  }
+}
