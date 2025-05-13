@@ -8,7 +8,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  dittofeed_sdk: ^1.0.0
+  flutter_dittofeed: ^0.0.1
 ```
 
 Then run:
