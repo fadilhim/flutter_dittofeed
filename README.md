@@ -25,7 +25,7 @@ Dittofeed's Dart SDK can be used to send events about your application and users
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:dittofeed_sdk/dittofeed_sdk.dart';
+import 'package:flutter_dittofeed/flutter_dittofeed.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,14 +47,14 @@ class _MyAppState extends State<MyApp> {
     // Initialize the SDK with a writeKey, which is used to identify your
     // workspace. This key can be found at
     // https://dittofeed.com/dashboard/settings
-    await DittofeedSdk.init(
+    await DittofeedSDK.init(
       InitParams(writeKey: "Basic abcdefg..."),
     );
 
     // Lets you tie a user to their actions and record traits about them. It
     // includes a unique User ID and any optional traits you know about the
     // user, like their email, name, and more.
-    DittofeedSdk.identify(
+    DittofeedSDK.identify(
       IdentifyData(
         userId: "123",
         traits: {
@@ -66,7 +66,7 @@ class _MyAppState extends State<MyApp> {
 
     // The track call is how you record any actions your users perform, along
     // with any properties that describe the action.
-    DittofeedSdk.track(
+    DittofeedSDK.track(
       TrackData(
         userId: "123",
         event: "Made Purchase",
@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
 
     // Lets you record whenever a user sees a screen in your mobile app,
     // along with any properties about the screen.
-    DittofeedSdk.screen(
+    DittofeedSDK.screen(
       ScreenData(
         userId: "123",
         name: "Recipe Screen",
@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
     );
 
     // Records page navigation events with properties
-    DittofeedSdk.page(
+    DittofeedSDK.page(
       PageData(
         userId: "123",
         name: "Settings Page",
@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> {
 
     // Ensures that asynchronously submitted events are flushed synchronously
     // to Dittofeed's API.
-    await DittofeedSdk.flush();
+    await DittofeedSDK.flush();
   }
 
   @override
@@ -125,7 +125,7 @@ class _MyAppState extends State<MyApp> {
 ### Initialization
 
 ```dart
-await DittofeedSdk.init(
+await DittofeedSDK.init(
   InitParams(
     writeKey: "Your Dittofeed Write Key",
     host: "https://dittofeed.com", // Optional, defaults to https://dittofeed.com
@@ -138,7 +138,7 @@ await DittofeedSdk.init(
 The `identify` method lets you tie a user to their actions and record traits about them:
 
 ```dart
-DittofeedSdk.identify(
+DittofeedSDK.identify(
   IdentifyData(
     userId: "unique_user_id",
     traits: {
@@ -154,7 +154,7 @@ DittofeedSdk.identify(
 You can also identify anonymous users:
 
 ```dart
-DittofeedSdk.identify(
+DittofeedSDK.identify(
   IdentifyData(
     anonymousId: "anonymous_user_id",
     traits: {
@@ -170,7 +170,7 @@ DittofeedSdk.identify(
 The `track` method lets you record user actions:
 
 ```dart
-DittofeedSdk.track(
+DittofeedSDK.track(
   TrackData(
     userId: "unique_user_id",
     event: "Button Clicked",
@@ -188,7 +188,7 @@ DittofeedSdk.track(
 The `page` method lets you record when a user views a page:
 
 ```dart
-DittofeedSdk.page(
+DittofeedSDK.page(
   PageData(
     userId: "unique_user_id",
     name: "Home Page",
@@ -206,7 +206,7 @@ DittofeedSdk.page(
 The `screen` method lets you record when a user views a screen in a mobile app:
 
 ```dart
-DittofeedSdk.screen(
+DittofeedSDK.screen(
   ScreenData(
     userId: "unique_user_id",
     name: "Product Screen",
@@ -223,7 +223,7 @@ DittofeedSdk.screen(
 The `flush` method ensures that any queued events are sent immediately:
 
 ```dart
-await DittofeedSdk.flush();
+await DittofeedSDK.flush();
 ```
 
 ## Configuration
@@ -239,7 +239,7 @@ The SDK batches events by default to minimize network requests. Events are sent:
 All event types support an optional `context` property that lets you specify metadata about the event:
 
 ```dart
-DittofeedSdk.track(
+DittofeedSDK.track(
   TrackData(
     userId: "unique_user_id",
     event: "Button Clicked",
@@ -266,7 +266,7 @@ DittofeedSdk.track(
 For users who aren't identified, you can use anonymous IDs:
 
 ```dart
-DittofeedSdk.track(
+DittofeedSDK.track(
   TrackData(
     anonymousId: "anonymous_user_id",
     event: "App Opened",

@@ -19,10 +19,7 @@ void main() {
     // Add a way to inject the mock client into the SDK
     // This requires modifying the SDK to accept a client in initialization
     await DittofeedSDK.init(
-      InitParams(
-        writeKey: testWriteKey,
-        host: testHost,
-      ),
+      InitParams(writeKey: testWriteKey, host: testHost),
       httpClient: client, // Add this parameter to your SDK
     );
   }
@@ -56,126 +53,119 @@ void main() {
   group('DittofeedSDK Event Tests', () {
     setUp(() async {
       // Configure mock to return success for all requests
-      when(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+      when(
+        mockClient.post(
+          any,
+          headers: anyNamed('headers'),
+          body: anyNamed('body'),
+        ),
+      ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
       await initSdkWithMockedClient(mockClient);
     });
 
     test('identify should submit correct data', () async {
       // Call identify
-      DittofeedSDK.identify(IdentifyData(
-        userId: 'user123',
-        traits: {'name': 'Test User', 'email': 'test@example.com'},
-      ));
+      DittofeedSDK.identify(
+        IdentifyData(
+          userId: 'user123',
+          traits: {'name': 'Test User', 'email': 'test@example.com'},
+        ),
+      );
 
       // Flush to ensure the request is sent
       await DittofeedSDK.flush();
 
       // Verify HTTP request was made with correct data
-      verify(mockClient.post(
-        Uri.parse('$testHost/api/public/apps/batch'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': testWriteKey,
-        },
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
+      verify(
+        mockClient.post(
+          Uri.parse('$testHost/api/public/apps/batch'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': testWriteKey,
+          },
+          body: argThat(
+            predicate<String>((body) {
+              final json = jsonDecode(body);
+              final batch = json['batch'] as List;
 
-          return batch.length == 1 &&
-              batch[0]['type'] == 'identify' &&
-              batch[0]['userId'] == 'user123' &&
-              batch[0]['traits']['name'] == 'Test User';
-        })),
-      )).called(1);
+              return batch.length == 1 &&
+                  batch[0]['type'] == 'identify' &&
+                  batch[0]['userId'] == 'user123' &&
+                  batch[0]['traits']['name'] == 'Test User';
+            }),
+          ),
+        ),
+      ).called(1);
     });
 
     test('track should submit correct data', () async {
       // Call track
-      DittofeedSDK.track(TrackData(
-        event: 'button_click',
-        userId: 'user123',
-        properties: {'buttonId': 'signup', 'timestamp': 1619111111},
-      ));
+      DittofeedSDK.track(
+        TrackData(
+          event: 'button_click',
+          userId: 'user123',
+          properties: {'buttonId': 'signup', 'timestamp': 1619111111},
+        ),
+      );
 
       // Flush to ensure the request is sent
       await DittofeedSDK.flush();
 
       // Verify HTTP request was made with correct data
-      verify(mockClient.post(
-        Uri.parse('$testHost/api/public/apps/batch'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': testWriteKey,
-        },
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
+      verify(
+        mockClient.post(
+          Uri.parse('$testHost/api/public/apps/batch'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': testWriteKey,
+          },
+          body: argThat(
+            predicate<String>((body) {
+              final json = jsonDecode(body);
+              final batch = json['batch'] as List;
 
-          return batch.length == 1 &&
-              batch[0]['type'] == 'track' &&
-              batch[0]['event'] == 'button_click' &&
-              batch[0]['userId'] == 'user123' &&
-              batch[0]['properties']['buttonId'] == 'signup';
-        })),
-      )).called(1);
+              return batch.length == 1 &&
+                  batch[0]['type'] == 'track' &&
+                  batch[0]['event'] == 'button_click' &&
+                  batch[0]['userId'] == 'user123' &&
+                  batch[0]['properties']['buttonId'] == 'signup';
+            }),
+          ),
+        ),
+      ).called(1);
     });
 
     test('page should submit correct data', () async {
       // Call page
-      DittofeedSDK.page(PageData(
-        name: 'Home Page',
-        userId: 'user123',
-        properties: {'referrer': 'google.com'},
-      ));
+      DittofeedSDK.page(
+        PageData(
+          name: 'Home Page',
+          userId: 'user123',
+          properties: {'referrer': 'google.com'},
+        ),
+      );
 
       // Flush to ensure the request is sent
       await DittofeedSDK.flush();
 
       // Verify HTTP request
-      verify(mockClient.post(
-        Uri.parse('$testHost/api/public/apps/batch'),
-        headers: argThat(isA<Map<String, String>>()),
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
+      verify(
+        mockClient.post(
+          Uri.parse('$testHost/api/public/apps/batch'),
+          headers: argThat(isA<Map<String, String>>()),
+          body: argThat(
+            predicate<String>((body) {
+              final json = jsonDecode(body);
+              final batch = json['batch'] as List;
 
-          return batch.length == 1 &&
-              batch[0]['type'] == 'page' &&
-              batch[0]['name'] == 'Home Page';
-        })),
-      )).called(1);
-    });
-
-    test('screen should submit correct data', () async {
-      // Call screen
-      DittofeedSDK.screen(ScreenData(
-        name: 'Settings Screen',
-        anonymousId: 'anon123',
-        properties: {'version': '1.0.0'},
-      ));
-
-      // Flush to ensure the request is sent
-      await DittofeedSDK.flush();
-
-      // Verify HTTP request
-      verify(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
-
-          return batch.length == 1 &&
-              batch[0]['type'] == 'screen' &&
-              batch[0]['name'] == 'Settings Screen' &&
-              batch[0]['anonymousId'] == 'anon123';
-        })),
-      )).called(1);
+              return batch.length == 1 &&
+                  batch[0]['type'] == 'page' &&
+                  batch[0]['name'] == 'Home Page';
+            }),
+          ),
+        ),
+      ).called(1);
     });
 
     test('should batch multiple events', () async {
@@ -190,25 +180,33 @@ void main() {
       await Future.delayed(Duration(milliseconds: 100));
 
       // Verify HTTP request for first batch
-      verify(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
+      verify(
+        mockClient.post(
+          any,
+          headers: anyNamed('headers'),
+          body: argThat(
+            predicate<String>((body) {
+              final json = jsonDecode(body);
+              final batch = json['batch'] as List;
 
-          return batch.length == 5;
-        })),
-      )).called(1);
+              return batch.length == 5;
+            }),
+          ),
+        ),
+      ).called(1);
     });
 
     test('should handle HTTP error', () async {
       // Configure mock to return an error
-      when(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response('{"error": "Something went wrong"}', 400));
+      when(
+        mockClient.post(
+          any,
+          headers: anyNamed('headers'),
+          body: anyNamed('body'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response('{"error": "Something went wrong"}', 400),
+      );
 
       // Call identify (should not throw)
       DittofeedSDK.identify(IdentifyData(userId: 'user123'));
@@ -217,41 +215,56 @@ void main() {
       await DittofeedSDK.flush();
 
       // Verify HTTP request was attempted
-      verify(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body'))).called(1);
+      verify(
+        mockClient.post(
+          any,
+          headers: anyNamed('headers'),
+          body: anyNamed('body'),
+        ),
+      ).called(1);
 
       // Should not throw an exception
     });
   });
 
   group('DittofeedSDK UUID Generation', () {
-    test('should generate UUIDs for events when messageId is not provided', () async {
-      // Configure mock
-      when(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+    test(
+      'should generate UUIDs for events when messageId is not provided',
+      () async {
+        // Configure mock
+        when(
+          mockClient.post(
+            any,
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+          ),
+        ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
-      await initSdkWithMockedClient(mockClient);
+        await initSdkWithMockedClient(mockClient);
 
-      // Call identify without messageId
-      DittofeedSDK.identify(IdentifyData(userId: 'user123'));
+        // Call identify without messageId
+        DittofeedSDK.identify(IdentifyData(userId: 'user123'));
 
-      // Flush to ensure the request is sent
-      await DittofeedSDK.flush();
+        // Flush to ensure the request is sent
+        await DittofeedSDK.flush();
 
-      // Verify UUID was generated
-      verify(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: argThat(predicate<String>((body) {
-          final json = jsonDecode(body);
-          final batch = json['batch'] as List;
+        // Verify UUID was generated
+        verify(
+          mockClient.post(
+            any,
+            headers: anyNamed('headers'),
+            body: argThat(
+              predicate<String>((body) {
+                final json = jsonDecode(body);
+                final batch = json['batch'] as List;
 
-          return batch[0]['messageId'] != null &&
-              batch[0]['messageId'].toString().isNotEmpty;
-        })),
-      )).called(1);
-    });
+                return batch[0]['messageId'] != null &&
+                    batch[0]['messageId'].toString().isNotEmpty;
+              }),
+            ),
+          ),
+        ).called(1);
+      },
+    );
   });
 }

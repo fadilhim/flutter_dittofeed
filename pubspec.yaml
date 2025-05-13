@@ -1,6 +1,8 @@
 name: flutter_dittofeed
-description: "Plugin for Dittofeed"
-version: 0.0.1
+description: "A Dart implementation of the Dittofeed SDK for Flutter applications."
+homepage: https://github.com/fadilhim/flutter_dittofeed
+repository: https://github.com/fadilhim/flutter_dittofeed
+version: 0.0.2
 
 environment:
   sdk: ^3.7.2

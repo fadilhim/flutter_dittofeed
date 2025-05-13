@@ -38,17 +38,21 @@ void main() {
       expect(executedBatches[0], 'task1,task2,task3');
     });
 
-    test('should execute batch when timeout is reached', () async {
-      // Submit just 1 task (less than batch size)
-      batchQueue.submit('task1');
+    test(
+      'should execute batch when timeout is reached',
+      () async {
+        // Submit just 1 task (less than batch size)
+        batchQueue.submit('task1');
 
-      // Wait for timeout to trigger batch execution
-      await batchExecuted.future;
+        // Wait for timeout to trigger batch execution
+        await batchExecuted.future;
 
-      // Verify batch was executed after timeout
-      expect(executedBatches.length, 1);
-      expect(executedBatches[0], 'task1');
-    }, timeout: Timeout(Duration(seconds: 2)));
+        // Verify batch was executed after timeout
+        expect(executedBatches.length, 1);
+        expect(executedBatches[0], 'task1');
+      },
+      timeout: Timeout(Duration(seconds: 2)),
+    );
 
     test('should clear timer when flushed manually', () async {
       // Submit a task
