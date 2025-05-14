@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_dittofeed/flutter_dittofeed.dart';
-import 'package:http/testing.dart';
 import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -8,6 +7,8 @@ import 'package:http/http.dart' as http;
 
 @GenerateMocks([http.Client])
 import 'flutter_dittofeed_test.mocks.dart';
+
+class FakeUri extends Fake implements Uri {}
 
 void main() {
   late MockClient mockClient;
@@ -79,11 +80,13 @@ void main() {
       // Verify HTTP request was made with correct data
       verify(
         mockClient.post(
-          Uri.parse('$testHost/api/public/apps/batch'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': testWriteKey,
-          },
+          argThat(equals(Uri.parse('$testHost/api/public/apps/batch'))),
+          headers: argThat(
+            equals({
+              'Content-Type': 'application/json',
+              'Authorization': testWriteKey,
+            }),
+          ),
           body: argThat(
             predicate<String>((body) {
               final json = jsonDecode(body);
@@ -115,11 +118,13 @@ void main() {
       // Verify HTTP request was made with correct data
       verify(
         mockClient.post(
-          Uri.parse('$testHost/api/public/apps/batch'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': testWriteKey,
-          },
+          argThat(equals(Uri.parse('$testHost/api/public/apps/batch'))),
+          headers: argThat(
+            equals({
+              'Content-Type': 'application/json',
+              'Authorization': testWriteKey,
+            }),
+          ),
           body: argThat(
             predicate<String>((body) {
               final json = jsonDecode(body);
@@ -152,7 +157,7 @@ void main() {
       // Verify HTTP request
       verify(
         mockClient.post(
-          Uri.parse('$testHost/api/public/apps/batch'),
+          argThat(equals(Uri.parse('$testHost/api/public/apps/batch'))),
           headers: argThat(isA<Map<String, String>>()),
           body: argThat(
             predicate<String>((body) {
