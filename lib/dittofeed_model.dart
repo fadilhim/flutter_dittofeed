@@ -6,7 +6,14 @@ enum EventType {
 
   /// Returns the string representation of the event type.
   String get value {
-    return toString();
+    switch (this) {
+      case EventType.identify:
+        return 'identify';
+      case EventType.track:
+        return 'track';
+      case EventType.page:
+        return 'page';
+    }
   }
 }
 
@@ -469,9 +476,16 @@ class InitParams {
   /// The write key.
   final String writeKey;
 
+  /// The API key.
+  final String apiKey;
+
   /// The host.
   final String host;
 
   /// Creates a new instance of [InitParams].
-  InitParams({required this.writeKey, this.host = 'https://dittofeed.com'});
+  InitParams({
+    required this.writeKey,
+    required this.apiKey,
+    this.host = 'https://dittofeed.com',
+  });
 }

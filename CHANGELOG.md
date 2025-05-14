@@ -4,4 +4,5 @@
 
 ## 0.0.2
 
-* Adding unit test for all functions and correction on documentation
+* Correction on documentation
+* Finalize all function

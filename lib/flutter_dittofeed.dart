@@ -12,6 +12,9 @@ class DittofeedSDK {
   /// The write key.
   final String writeKey;
 
+  /// The API key.
+  final String apiKey;
+
   /// The host.
   final String host;
 
@@ -30,6 +33,7 @@ class DittofeedSDK {
   /// Creates a new instance of [DittofeedSDK].
   DittofeedSDK._({
     required this.writeKey,
+    required this.apiKey,
     required this.host,
     http.Client? httpClient,
   }) : _batchQueue = BatchQueue<BatchItem>(
@@ -40,12 +44,14 @@ class DittofeedSDK {
 
            try {
              final client = httpClient ?? http.Client();
+             final headers = {
+               'Content-Type': 'application/json',
+               'PublicWriteKey': apiKey,
+               'authorization': writeKey,
+             };
              final response = await client.post(
                Uri.parse('$host/api/public/apps/batch'),
-               headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': writeKey,
-               },
+               headers: headers,
                body: jsonEncode(data.toJson()),
              );
 
@@ -67,6 +73,7 @@ class DittofeedSDK {
   }) async {
     _instance ??= DittofeedSDK._(
       writeKey: params.writeKey,
+      apiKey: params.apiKey,
       host: params.host,
       httpClient: httpClient,
     );

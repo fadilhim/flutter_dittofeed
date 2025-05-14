@@ -1,5 +1,7 @@
 # Dittofeed Dart SDK
 
+**Note:** This is **not an official** SDK.
+
 A Dart implementation of the Dittofeed SDK for Flutter applications.
 
 ## Installation
