@@ -23,7 +23,9 @@ class _MyAppState extends State<MyApp> {
     // Initialize the SDK with a writeKey, which is used to identify your
     // workspace. This key can be found at
     // https://dittofeed.com/dashboard/settings
-    await DittofeedSDK.init(InitParams(writeKey: "Basic abcdefg..."));
+    await DittofeedSDK.init(
+      InitParams(writeKey: "Basic abcdefg...", apiKey: 'Apikey'),
+    );
 
     // Lets you tie a user to their actions and record traits about them. It
     // includes a unique User ID and any optional traits you know about the
@@ -42,16 +44,6 @@ class _MyAppState extends State<MyApp> {
         userId: "123",
         event: "Made Purchase",
         properties: {"itemId": "abc"},
-      ),
-    );
-
-    // Lets you record whenever a user sees a screen in your mobile app,
-    // along with any properties about the screen.
-    DittofeedSDK.screen(
-      ScreenData(
-        userId: "123",
-        name: "Recipe Screen",
-        properties: {"recipeType": "Soup"},
       ),
     );
 

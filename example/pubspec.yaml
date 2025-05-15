@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_dittofeed: ^0.0.1
+  flutter_dittofeed:
+    path: ../
 
 dev_dependencies:
   flutter_test:
