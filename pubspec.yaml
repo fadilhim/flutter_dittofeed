@@ -2,7 +2,7 @@ name: flutter_dittofeed
 description: "A Dart implementation of the Dittofeed SDK for Flutter applications."
 homepage: https://github.com/fadilhim/flutter_dittofeed
 repository: https://github.com/fadilhim/flutter_dittofeed
-version: 0.0.3
+version: 0.0.4
 
 platforms:
   android:

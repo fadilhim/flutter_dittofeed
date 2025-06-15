@@ -10,7 +10,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_dittofeed: ^0.0.2
+  flutter_dittofeed: ^0.0.4
 ```
 
 Then run:
